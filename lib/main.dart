@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_setup/user_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get/get.dart';
+
+import 'model/user.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +18,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'FlutterFireStore',
       theme: ThemeData(
@@ -34,48 +37,39 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {   },
+        onPressed: () => {Get.to(() => UserPage())},
         child: Icon(Icons.create),
       ),
-      appBar: AppBar(
-        title: Text('All Users')
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[],
-        ),
-      ),
+      appBar: AppBar(title: Text('All Users')),
       // This trailing comma makes auto-formatting nicer for build methods.
+      body: StreamBuilder<List<User>>(
+          stream: readUsers(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final users = snapshot.data!;
+              return ListView(
+                children: users.map(buildUser).toList(),
+              );
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          }),
     );
   }
-
-
 }
 
-// class User {
-//   String id;
-//   final String name;
-//   final int age;
-//   final DateTime birthday;
-//
-//   User({
-//     this.id = '',
-//     required this.name,
-//     required this.age,
-//     required this.birthday
-//   });
-//
-//   Map<String,dynamic> toJson()=>{
-//     'id':id,
-//     'name': name,
-//     'age': age,
-//     'birthday': birthday
-//   };
-//
-// }
+Widget buildUser(User user) => ListTile(
+      title: Text(user.name),
+      leading: CircleAvatar(
+        child: Text('${user.age}'),
+      ),
+      subtitle: Text(user.birthday.toIso8601String()),
+    );
+
+Stream<List<User>> readUsers ()
+{return FirebaseFirestore.instance.collection('users').snapshots().map((snapshot) =>
+    snapshot.docs.map((doc) => User.fromJson(doc.data())).toList());}

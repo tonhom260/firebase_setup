@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'model/user.dart';
 class UserPage extends StatefulWidget {
@@ -55,7 +56,7 @@ class _UserPageState extends State<UserPage> {
                 birthday: DateTime.parse(birthdayCtr.text)
             );
             createUser(name: name);
-
+            Get.back();
 
             // Navigator.pop(context);
             }, child: Text('Create'))
