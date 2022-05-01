@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+import 'model/user.dart';
 class UserPage extends StatefulWidget {
   const UserPage({Key? key}) : super(key: key);
 
@@ -47,12 +49,16 @@ class _UserPageState extends State<UserPage> {
           ),
           SizedBox(height: 24,),
           ElevatedButton(onPressed: (){
-            createUser(
-              name: nameCtr.text,
-              age: int.parse(ageCtr.text),
-              bd: DateTime.parse(birthdayCtr.text)
+            var name = User(
+                name: nameCtr.text,
+                age: int.parse(ageCtr.text),
+                birthday: DateTime.parse(birthdayCtr.text)
             );
-            Navigator.pop(context);}, child: Text('Create'))
+            createUser(name: name);
+
+
+            // Navigator.pop(context);
+            }, child: Text('Create'))
 
 
         ],
@@ -61,37 +67,12 @@ class _UserPageState extends State<UserPage> {
   }
 }
 
-Future createUser({required String name,required int age,required DateTime bd}) async {
+Future createUser({required User name}) async {
   final docUser = FirebaseFirestore.instance.collection('users').doc();
-  final user = User(
-      id:docUser.id,
-      name: name,
-      age:age,
-      birthday:bd
-  );
-  final json = user.toJson();
+  final json = name.toJson();
   await docUser.set(json);
 }
 
 
-class User {
-  String id;
-  final String name;
-  final int age;
-  final DateTime birthday;
 
-  User({
-    this.id = '',
-    required this.name,
-    required this.age,
-    required this.birthday
-  });
 
-  Map<String,dynamic> toJson()=>{
-    'id':id,
-    'name': name,
-    'age': age,
-    'birthday': birthday
-  };
-
-}
